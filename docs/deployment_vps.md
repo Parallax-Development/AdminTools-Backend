@@ -60,14 +60,14 @@ sudo chown -R parallax:parallax /opt/parallax-admin
 
 ### 4) Clonar el proyecto
 ```
-sudo -u parallax git clone https://github.com/DarkBladeDev/Parallax-AdminTools.git /opt/parallax-admin
+sudo -u parallax git clone https://github.com/Parallax-Development/AdminTools-Backend.git /opt/parallax/backend
 ```
 
 ### 5) Crear entorno virtual e instalar dependencias
 ```
-sudo -u parallax python3 -m venv /opt/parallax-admin/.venv
-sudo -u parallax /opt/parallax-admin/.venv/bin/pip install -U pip
-sudo -u parallax /opt/parallax-admin/.venv/bin/pip install -r /opt/parallax-admin/requirements.txt
+sudo -u parallax python3 -m venv /opt/parallax/backend/.venv
+sudo -u parallax /opt/parallax/backend/.venv/bin/pip install -U pip
+sudo -u parallax /opt/parallax/backend/.venv/bin/pip install -r /opt/parallax/backend/requirements.txt
 ```
 
 ## Configuración de base de datos
@@ -85,8 +85,8 @@ GRANT ALL PRIVILEGES ON DATABASE parallax_admin TO parallax;
 
 ### Migraciones
 ```
-cd /opt/parallax-admin
-sudo -u parallax /opt/parallax-admin/.venv/bin/python manage.py migrate
+cd /opt/parallax/backend
+sudo -u parallax /opt/parallax/backend/.venv/bin/python manage.py migrate
 ```
 
 ## Configuración de servicios web
@@ -104,8 +104,8 @@ After=network.target
 [Service]
 User=parallax
 Group=parallax
-WorkingDirectory=/opt/parallax-admin
-EnvironmentFile=/opt/parallax-admin/.env
+WorkingDirectory=/opt/parallax/backend
+EnvironmentFile=/opt/parallax/backend/.env
 ExecStart=/opt/parallax-admin/.venv/bin/daphne -b 127.0.0.1 -p 8000 parallax_admin.asgi:application
 Restart=always
 RestartSec=5
@@ -122,7 +122,7 @@ sudo systemctl start parallax-admin
 ```
 
 #### Nginx reverse proxy
-Crear `/etc/nginx/sites-available/parallax-admin`:
+Crear `/etc/nginx/sites-available/parallax-backend`:
 
 ```
 server {
@@ -143,7 +143,7 @@ server {
 
 Habilitar sitio:
 ```
-sudo ln -s /etc/nginx/sites-available/parallax-admin /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/parallax-backend /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -184,17 +184,17 @@ sudo ufw enable
 
 ### Build inicial
 ```
-cd /opt/parallax-admin
-sudo -u parallax /opt/parallax-admin/.venv/bin/python manage.py migrate
-sudo -u parallax /opt/parallax-admin/.venv/bin/python manage.py check
+cd /opt/parallax/backend
+sudo -u parallax /opt/parallax/backend/.venv/bin/python manage.py migrate
+sudo -u parallax /opt/parallax/backend/.venv/bin/python manage.py check
 ```
 
 ### Despliegue (actualización)
 ```
-cd /opt/parallax-admin
+cd /opt/parallax/backend
 sudo -u parallax git pull
-sudo -u parallax /opt/parallax-admin/.venv/bin/pip install -r requirements.txt
-sudo -u parallax /opt/parallax-admin/.venv/bin/python manage.py migrate
+sudo -u parallax /opt/parallax/backend/.venv/bin/pip install -r requirements.txt
+sudo -u parallax /opt/parallax/backend/.venv/bin/python manage.py migrate
 sudo systemctl restart parallax-admin
 ```
 
@@ -204,10 +204,10 @@ sudo systemctl restart parallax-admin
 ```
 #!/usr/bin/env bash
 set -euo pipefail
-cd /opt/parallax-admin
+cd /opt/parallax/backend
 git pull
-/opt/parallax-admin/.venv/bin/pip install -r requirements.txt
-/opt/parallax-admin/.venv/bin/python manage.py migrate
+/opt/parallax/backend/.venv/bin/pip install -r requirements.txt
+/opt/parallax/backend/.venv/bin/python manage.py migrate
 /opt/parallax-admin/.venv/bin/python manage.py check
 systemctl restart parallax-admin
 ```
@@ -219,8 +219,8 @@ set -euo pipefail
 cd /opt/parallax-admin
 git fetch --all
 git checkout <COMMIT_HASH>
-/opt/parallax-admin/.venv/bin/pip install -r requirements.txt
-/opt/parallax-admin/.venv/bin/python manage.py migrate
+/opt/parallax/backend/.venv/bin/pip install -r requirements.txt
+/opt/parallax/backend/.venv/bin/python manage.py migrate
 systemctl restart parallax-admin
 ```
 
@@ -228,7 +228,7 @@ systemctl restart parallax-admin
 - Validar estado del servicio:
   - `systemctl status parallax-admin`
 - Validar salud de Django:
-  - `/opt/parallax-admin/.venv/bin/python manage.py check`
+  - `/opt/parallax/backend/.venv/bin/python manage.py check`
 - Probar API:
   - `curl http://example.com/api/users/active/`
 - Probar WebSocket:
@@ -251,7 +251,7 @@ journalctl -u parallax-admin -f
 ## Mantenimiento y actualización
 - Actualizar dependencias: `pip list --outdated`
 - Backups de PostgreSQL diarios:
-  - `pg_dump -U parallax parallax_admin > backup.sql`
+  - `pg_dump -U parallax parallax_backend > backup.sql`
 - Rotación de logs con logrotate
 - Revisar alertas y métricas semanalmente
 
