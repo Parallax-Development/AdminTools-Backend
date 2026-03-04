@@ -1,3 +1,9 @@
+## [0.2.0] - 2026-03-03
+
+### Added
+- Consola administrativa frontend React con dashboards dinámicos, widgets y moderación en tiempo real
+- Persistencia de layout por usuario y visualización de estado WebSocket en el panel
+
 ## [0.1.1] - 2026-03-03
 
 ### Added

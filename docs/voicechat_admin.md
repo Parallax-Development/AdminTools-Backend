@@ -3,6 +3,51 @@
 ## Descripción funcional
 Plataforma backend con panel admin desacoplado que centraliza estado, sesiones, moderación, telemetría y widgets dinámicos para un sistema de voicechat conectado a servidores Minecraft mediante WebSocket autenticado con HMAC.
 
+## Panel frontend (React)
+Consola administrativa en tiempo real construida en React + TypeScript con arquitectura modular por dominios. Consume la API REST y el WebSocket de eventos, renderiza dashboards dinámicos basados en widgets JSON y persiste el layout por usuario.
+
+### Configuración frontend
+- VITE_API_BASE_URL: URL base de la API REST (ej: http://localhost:8000)
+- VITE_WS_URL: URL del WebSocket admin (ej: ws://localhost:8000/ws/admin/)
+
+### Permisos requeridos (UI)
+- moderation.mute: habilita mute en tabla de usuarios
+- moderation.kick: habilita kick en tabla de usuarios
+- moderation.ban: habilita ban en tabla de usuarios
+- dashboard.edit: permite drag & resize del layout
+
+### Ejemplo de login
+El panel requiere token, user_id, server_id y permisos disponibles:
+
+```text
+Token: <token>
+User ID: 12
+Server ID: lobby-1
+Permisos: moderation.mute,moderation.kick,moderation.ban,dashboard.edit
+Roles: admin
+```
+
+### WebSocket admin
+- URL: ws://<host>/ws/admin/?token=<token>
+- Payload recibido:
+
+```json
+{
+  "type": "event",
+  "event": "voice.user_connected",
+  "payload": {
+    "user_id": 12,
+    "session_id": 88,
+    "server_id": "lobby-1",
+    "channel_id": 3
+  }
+}
+```
+
+### Persistencia de layout
+- El panel guarda el layout por usuario en /api/dashboards/.
+- Si no hay layout remoto disponible, usa el layout local en localStorage.
+
 ## Parámetros y configuración
 - DJANGO_SECRET_KEY: clave secreta de Django
 - DJANGO_DEBUG: true|false
@@ -173,6 +218,22 @@ Plataforma backend con panel admin desacoplado que centraliza estado, sesiones, 
 - counter
 - button
 - feed
+
+### Esquema UI usado por el panel
+Parámetros principales:
+- title: título visible
+- metric: clave para counters o charts (active_users, events)
+- endpoint: endpoint REST opcional para button
+- payload: payload opcional para button
+- required_permissions: lista de permisos para renderizar
+
+```json
+{
+  "title": "Usuarios activos",
+  "metric": "active_users",
+  "required_permissions": ["dashboard.view"]
+}
+```
 
 ### Vinculación a roles
 - WidgetDefinition.allowed_roles y WidgetDefinition.required_permissions determinan visibilidad.
