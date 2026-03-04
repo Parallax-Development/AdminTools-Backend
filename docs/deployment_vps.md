@@ -17,7 +17,7 @@ Este documento describe la instalación, configuración y despliegue del backend
 - Node.js (solo si luego se agrega frontend separado)
 
 ## Variables de entorno
-Crear archivo `.env` en `/opt/parallax-admin/.env`:
+Crear archivo `.env` en `/opt/parallax/backend/.env`:
 
 ```
 DJANGO_SECRET_KEY=change-me
@@ -54,8 +54,8 @@ sudo apt install -y python3 python3-venv python3-pip build-essential \
 
 ### 3) Crear directorio de despliegue
 ```
-sudo mkdir -p /opt/parallax-admin
-sudo chown -R parallax:parallax /opt/parallax-admin
+sudo mkdir -p /opt/parallax/backend
+sudo chown -R parallax:parallax /opt/parallax/backend
 ```
 
 ### 4) Clonar el proyecto
@@ -94,11 +94,11 @@ sudo -u parallax /opt/parallax/backend/.venv/bin/python manage.py migrate
 ### Opción A: Nginx + Daphne (recomendado)
 
 #### Servicio systemd para Daphne
-Crear `/etc/systemd/system/parallax-admin.service`:
+Crear `/etc/systemd/system/parallax-backend.service`:
 
 ```
 [Unit]
-Description=Parallax Admin ASGI
+Description=Parallax Backend ASGI
 After=network.target
 
 [Service]
@@ -106,7 +106,7 @@ User=parallax
 Group=parallax
 WorkingDirectory=/opt/parallax/backend
 EnvironmentFile=/opt/parallax/backend/.env
-ExecStart=/opt/parallax-admin/.venv/bin/daphne -b 127.0.0.1 -p 8000 parallax_admin.asgi:application
+ExecStart=/opt/parallax/backend/.venv/bin/daphne -b 127.0.0.1 -p 8000 parallax_admin.asgi:application
 Restart=always
 RestartSec=5
 
@@ -117,17 +117,17 @@ WantedBy=multi-user.target
 Activar y arrancar:
 ```
 sudo systemctl daemon-reload
-sudo systemctl enable parallax-admin
-sudo systemctl start parallax-admin
+sudo systemctl enable parallax-backend
+sudo systemctl start parallax-backend
 ```
 
 #### Nginx reverse proxy
 Crear `/etc/nginx/sites-available/parallax-backend`:
 
-```
+```nginx
 server {
     listen 80;
-    server_name example.com;
+    server_name api.example.com;
 
     location / {
         proxy_pass http://127.0.0.1:8000;
@@ -141,7 +141,7 @@ server {
 }
 ```
 
-Habilitar sitio:
+Habilitar sitio y recargar Nginx:
 ```
 sudo ln -s /etc/nginx/sites-available/parallax-backend /etc/nginx/sites-enabled/
 sudo nginx -t
@@ -183,62 +183,63 @@ sudo ufw enable
 ## Comandos de construcción y despliegue
 
 ### Build inicial
-```
+```bash
 cd /opt/parallax/backend
 sudo -u parallax /opt/parallax/backend/.venv/bin/python manage.py migrate
 sudo -u parallax /opt/parallax/backend/.venv/bin/python manage.py check
 ```
 
 ### Despliegue (actualización)
-```
+```bash
 cd /opt/parallax/backend
 sudo -u parallax git pull
 sudo -u parallax /opt/parallax/backend/.venv/bin/pip install -r requirements.txt
 sudo -u parallax /opt/parallax/backend/.venv/bin/python manage.py migrate
-sudo systemctl restart parallax-admin
+sudo systemctl restart parallax-backend
 ```
 
 ## Scripts de automatización
 
 ### deploy.sh
-```
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
 cd /opt/parallax/backend
 git pull
 /opt/parallax/backend/.venv/bin/pip install -r requirements.txt
 /opt/parallax/backend/.venv/bin/python manage.py migrate
-/opt/parallax-admin/.venv/bin/python manage.py check
-systemctl restart parallax-admin
+/opt/parallax/backend/.venv/bin/python manage.py check
+systemctl restart parallax-backend
 ```
 
 ### rollback.sh
-```
+```bash
 #!/usr/bin/env bash
 set -euo pipefail
-cd /opt/parallax-admin
+cd /opt/parallax/backend
 git fetch --all
 git checkout <COMMIT_HASH>
 /opt/parallax/backend/.venv/bin/pip install -r requirements.txt
 /opt/parallax/backend/.venv/bin/python manage.py migrate
-systemctl restart parallax-admin
+/opt/parallax/backend/.venv/bin/python manage.py check
+systemctl restart parallax-backend
 ```
 
 ## Verificación y testing post-instalación
 - Validar estado del servicio:
-  - `systemctl status parallax-admin`
+  - `systemctl status parallax-backend`
 - Validar salud de Django:
   - `/opt/parallax/backend/.venv/bin/python manage.py check`
 - Probar API:
-  - `curl http://example.com/api/users/active/`
+  - `curl http://api.example.com/api/users/active/`
 - Probar WebSocket:
-  - `wscat -c ws://example.com/ws/admin/`
+  - `wscat -c ws://api.example.com/ws/admin/`
 
 ## Monitoreo y logs
 
 ### Logs del servicio
-```
-journalctl -u parallax-admin -f
+```bash
+journalctl -u parallax-backend -f
 ```
 
 ### Métricas recomendadas
