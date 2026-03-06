@@ -1,3 +1,10 @@
+## [0.3.0] - 2026-03-04
+
+### Added
+- Capa de abstracción multi‑DB con DAOs, conectores y migraciones unificadas
+- Soporte configurable para PostgreSQL, MySQL, SQLite, Oracle, SQL Server y MongoDB
+- Pruebas unitarias e integración por backend de base de datos
+
 ## [0.2.0] - 2026-03-03
 
 ### Added

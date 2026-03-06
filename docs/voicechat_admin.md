@@ -52,12 +52,43 @@ Roles: admin
 - DJANGO_SECRET_KEY: clave secreta de Django
 - DJANGO_DEBUG: true|false
 - DJANGO_ALLOWED_HOSTS: lista separada por coma
-- USE_POSTGRES: true|false
-- POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT
+- DOMAIN_DB_BACKEND: postgres|mysql|sqlite|oracle|sqlserver|mongodb
+- DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
+- SQLITE_PATH: ruta del archivo SQLite
+- MYSQL_DRIVER: pymysql
+- DJANGO_DB_BACKEND: backend SQL para Django cuando DOMAIN_DB_BACKEND=mongodb
+- MONGO_URI, MONGO_DB
 - REDIS_URL: URL de Redis para caché y canales
 - PLUGIN_SHARED_SECRETS: JSON con api_key:secret
 - PLUGIN_ALLOWED_DRIFT_SECONDS: ventana de tiempo para firmas
 - PLUGIN_EVENT_TTL_SECONDS: TTL para idempotencia de eventos
+
+## Capa de abstracción multi‑DB
+La lógica de negocio consume DAOs comunes y el motor se selecciona por variables de entorno. Para motores SQL se usan migraciones de Django y para MongoDB se crean índices y colecciones vía `db_migrate`.
+
+### Ejemplo de configuración PostgreSQL
+```env
+DOMAIN_DB_BACKEND=postgres
+DB_NAME=parallax_admin
+DB_USER=parallax
+DB_PASSWORD=strong-password
+DB_HOST=127.0.0.1
+DB_PORT=5432
+```
+
+### Ejemplo de configuración MongoDB
+```env
+DOMAIN_DB_BACKEND=mongodb
+DJANGO_DB_BACKEND=sqlite
+SQLITE_PATH=/opt/parallax/backend/db.sqlite3
+MONGO_URI=mongodb://127.0.0.1:27017
+MONGO_DB=parallax_admin
+```
+
+### Migraciones unificadas
+```bash
+python manage.py db_migrate
+```
 
 ## Permisos requeridos
 - moderation.mute: requerido para mutear usuarios

@@ -16,6 +16,12 @@ Este documento describe la instalación, configuración y despliegue del backend
 - Nginx o Apache como reverse proxy
 - Node.js (solo si luego se agrega frontend separado)
 
+### Dependencias opcionales por motor
+- MySQL/MariaDB: servidor MySQL y headers de cliente
+- Oracle: Oracle Instant Client y SDK
+- SQL Server: ODBC Driver 18 for SQL Server
+- MongoDB: MongoDB 6+ y acceso a puerto 27017
+
 ## Variables de entorno
 Crear archivo `.env` en `/opt/parallax/backend/.env`:
 
@@ -23,12 +29,17 @@ Crear archivo `.env` en `/opt/parallax/backend/.env`:
 DJANGO_SECRET_KEY=change-me
 DJANGO_DEBUG=false
 DJANGO_ALLOWED_HOSTS=example.com,api.example.com
-USE_POSTGRES=true
-POSTGRES_DB=parallax_admin
-POSTGRES_USER=parallax
-POSTGRES_PASSWORD=strong-password
-POSTGRES_HOST=127.0.0.1
-POSTGRES_PORT=5432
+DOMAIN_DB_BACKEND=postgres
+DB_NAME=parallax_admin
+DB_USER=parallax
+DB_PASSWORD=strong-password
+DB_HOST=127.0.0.1
+DB_PORT=5432
+SQLITE_PATH=/opt/parallax/backend/db.sqlite3
+MYSQL_DRIVER=pymysql
+DJANGO_DB_BACKEND=sqlite
+MONGO_URI=mongodb://127.0.0.1:27017
+MONGO_DB=parallax_admin
 REDIS_URL=redis://127.0.0.1:6379/0
 PLUGIN_SHARED_SECRETS={"api-key-1":"shared-secret-1"}
 PLUGIN_ALLOWED_DRIFT_SECONDS=60
@@ -86,7 +97,7 @@ GRANT ALL PRIVILEGES ON DATABASE parallax_admin TO parallax;
 ### Migraciones
 ```
 cd /opt/parallax/backend
-sudo -u parallax /opt/parallax/backend/.venv/bin/python manage.py migrate
+sudo -u parallax /opt/parallax/backend/.venv/bin/python manage.py db_migrate
 ```
 
 ## Configuración de servicios web
@@ -185,7 +196,7 @@ sudo ufw enable
 ### Build inicial
 ```bash
 cd /opt/parallax/backend
-sudo -u parallax /opt/parallax/backend/.venv/bin/python manage.py migrate
+sudo -u parallax /opt/parallax/backend/.venv/bin/python manage.py db_migrate
 sudo -u parallax /opt/parallax/backend/.venv/bin/python manage.py check
 ```
 
@@ -194,7 +205,7 @@ sudo -u parallax /opt/parallax/backend/.venv/bin/python manage.py check
 cd /opt/parallax/backend
 sudo -u parallax git pull
 sudo -u parallax /opt/parallax/backend/.venv/bin/pip install -r requirements.txt
-sudo -u parallax /opt/parallax/backend/.venv/bin/python manage.py migrate
+sudo -u parallax /opt/parallax/backend/.venv/bin/python manage.py db_migrate
 sudo systemctl restart parallax-backend
 ```
 
@@ -207,7 +218,7 @@ set -euo pipefail
 cd /opt/parallax/backend
 git pull
 /opt/parallax/backend/.venv/bin/pip install -r requirements.txt
-/opt/parallax/backend/.venv/bin/python manage.py migrate
+/opt/parallax/backend/.venv/bin/python manage.py db_migrate
 /opt/parallax/backend/.venv/bin/python manage.py check
 systemctl restart parallax-backend
 ```
@@ -220,7 +231,7 @@ cd /opt/parallax/backend
 git fetch --all
 git checkout <COMMIT_HASH>
 /opt/parallax/backend/.venv/bin/pip install -r requirements.txt
-/opt/parallax/backend/.venv/bin/python manage.py migrate
+/opt/parallax/backend/.venv/bin/python manage.py db_migrate
 /opt/parallax/backend/.venv/bin/python manage.py check
 systemctl restart parallax-backend
 ```

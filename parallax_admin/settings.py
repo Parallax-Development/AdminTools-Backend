@@ -2,6 +2,8 @@ import json
 import os
 from pathlib import Path
 
+from core.db.config import build_django_databases, get_domain_backend, get_mongo_settings
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret")
@@ -56,25 +58,9 @@ TEMPLATES = [
 WSGI_APPLICATION = "parallax_admin.wsgi.application"
 ASGI_APPLICATION = "parallax_admin.asgi.application"
 
-USE_POSTGRES = os.getenv("USE_POSTGRES", "false").lower() in {"1", "true", "yes"}
-if USE_POSTGRES:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("POSTGRES_DB", "parallax_admin"),
-            "USER": os.getenv("POSTGRES_USER", "parallax"),
-            "PASSWORD": os.getenv("POSTGRES_PASSWORD", "parallax"),
-            "HOST": os.getenv("POSTGRES_HOST", "localhost"),
-            "PORT": os.getenv("POSTGRES_PORT", "5432"),
-        }
-    }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+DATABASES = build_django_databases(BASE_DIR)
+DOMAIN_DB_BACKEND = get_domain_backend()
+MONGO_SETTINGS = get_mongo_settings()
 
 AUTH_PASSWORD_VALIDATORS = []
 

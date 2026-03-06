@@ -7,6 +7,7 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from django.conf import settings
 from django.utils import timezone
 
+from core.db.provider import get_dao_provider, is_mongodb_backend
 from core.users.models import User
 from core.voice.redis import is_duplicate_event
 from core.voice.services import get_or_create_channel, record_telemetry, set_user_offline, set_user_online
@@ -59,6 +60,30 @@ class PluginConsumer(AsyncJsonWebsocketConsumer):
         channel_id = payload.get("channel_id")
         channel_name = payload.get("channel_name")
 
+        if is_mongodb_backend():
+            provider = get_dao_provider()
+            if minecraft_uuid:
+                user = provider.users.get(minecraft_uuid=minecraft_uuid)
+            else:
+                user = provider.users.get(username=username)
+            if not user:
+                user = provider.users.create(
+                    {
+                        "minecraft_uuid": minecraft_uuid,
+                        "username": username,
+                        "display_name": display_name,
+                        "is_online": False,
+                        "last_seen_at": None,
+                        "current_channel": None,
+                        "external_id": None,
+                    }
+                )
+            if display_name and user.get("display_name") != display_name:
+                user = provider.users.update(user["id"], {"display_name": display_name})
+            channel = get_or_create_channel(self.server_id, channel_id, channel_name)
+            set_user_online(user, channel, self.server_id, payload)
+            return
+
         if minecraft_uuid:
             user, _ = User.objects.get_or_create(minecraft_uuid=minecraft_uuid, defaults={"username": username})
         else:
@@ -74,6 +99,16 @@ class PluginConsumer(AsyncJsonWebsocketConsumer):
     async def handle_user_disconnected(self, payload):
         minecraft_uuid = payload.get("minecraft_uuid")
         username = payload.get("username")
+
+        if is_mongodb_backend():
+            provider = get_dao_provider()
+            if minecraft_uuid:
+                user = provider.users.get(minecraft_uuid=minecraft_uuid)
+            else:
+                user = provider.users.get(username=username)
+            if user:
+                set_user_offline(user, self.server_id, payload)
+            return
 
         if minecraft_uuid:
             user = User.objects.filter(minecraft_uuid=minecraft_uuid).first()
