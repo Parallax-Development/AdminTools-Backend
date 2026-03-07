@@ -1,3 +1,8 @@
+## [0.3.1] - 2026-03-07
+
+### Added
+- Acceso al admin de Django en /admin/ para gestión interna
+
 ## [0.3.0] - 2026-03-04
 
 ### Added

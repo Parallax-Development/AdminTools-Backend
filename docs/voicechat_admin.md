@@ -48,6 +48,27 @@ Roles: admin
 - El panel guarda el layout por usuario en /api/dashboards/.
 - Si no hay layout remoto disponible, usa el layout local en localStorage.
 
+## Admin de Django
+Interfaz de administración para gestionar usuarios, roles, permisos y modelos internos.
+
+### URL
+- /admin/
+
+### Parámetros
+- DJANGO_ALLOWED_HOSTS debe incluir el dominio donde se expone el admin.
+- Credenciales de un usuario con acceso al admin.
+
+### Permisos requeridos
+- is_staff=true para iniciar sesión.
+- is_superuser=true para acceso total a todos los módulos.
+
+### Ejemplo de uso
+```bash
+python manage.py createsuperuser
+```
+
+Accede luego a `https://<tu-dominio>/admin/` e inicia sesión con el superusuario creado.
+
 ## Parámetros y configuración
 - DJANGO_SECRET_KEY: clave secreta de Django
 - DJANGO_DEBUG: true|false
