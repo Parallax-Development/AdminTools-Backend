@@ -1,3 +1,8 @@
+## [0.3.2] - 2026-03-07
+
+### Added
+- Configuración de CSRF trusted origins desde variables de entorno
+
 ## [0.3.1] - 2026-03-07
 
 ### Added

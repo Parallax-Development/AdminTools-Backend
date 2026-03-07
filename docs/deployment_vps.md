@@ -29,6 +29,7 @@ Crear archivo `.env` en `/opt/parallax/backend/.env`:
 DJANGO_SECRET_KEY=change-me
 DJANGO_DEBUG=false
 DJANGO_ALLOWED_HOSTS=example.com,api.example.com
+DJANGO_CSRF_TRUSTED_ORIGINS=https://admin.example.com,https://api.example.com
 DOMAIN_DB_BACKEND=postgres
 DB_NAME=parallax_admin
 DB_USER=parallax
@@ -151,6 +152,10 @@ server {
     }
 }
 ```
+
+Acceso al admin de Django:
+- URL: https://api.example.com/admin/
+- Si el frontend y el backend comparten dominio, configura un proxy específico para /admin/ en el servidor del frontend.
 
 Habilitar sitio y recargar Nginx:
 ```bash

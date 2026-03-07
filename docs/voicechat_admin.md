@@ -73,6 +73,7 @@ Accede luego a `https://<tu-dominio>/admin/` e inicia sesión con el superusuari
 - DJANGO_SECRET_KEY: clave secreta de Django
 - DJANGO_DEBUG: true|false
 - DJANGO_ALLOWED_HOSTS: lista separada por coma
+- DJANGO_CSRF_TRUSTED_ORIGINS: lista separada por coma con https://dominio
 - DOMAIN_DB_BACKEND: postgres|mysql|sqlite|oracle|sqlserver|mongodb
 - DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
 - SQLITE_PATH: ruta del archivo SQLite
